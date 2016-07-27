@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Extract data from the DOM",
   "main": "bundle.js",
+  "jsnext:main": "src/index.js",
   "directories": {
     "test": "test"
   },
