@@ -1,0 +1,20 @@
+* Move modifiers to `$x` format, where x is the name of the modifier:
+    $e: query an element
+    $f: filter the output
+    $m: parse manually
+    $t: force type
+    $a: get data from an attribute (using getAttribute)
+    $p: get data from a property on the HTMLElement
+* Force type: `$t: "int"` would try to parse as integer, `$t: "date"` would parse a date, etc.
+* Shortcut to get data from attributes and HTMLElement properties with $a and $p, respectively
+* Parsing order:
+    first:
+      if manual: just use that value. end.
+      else:
+        if has $p: get data from property
+        if has $a: get data from attribute
+        else: get data from textContent
+    parse according to type ($t if present, otherwise guess)
+    if has $f: filter value
+* Shortcut for manual parsing: just pass a function, instead of {__: function($elem) {...}}
+* Source object: always closest selector ($e): check if this works correctly
