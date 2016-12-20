@@ -43,6 +43,11 @@ module.exports = {
   
   query: function( val ) {
     return this.defined( val ) && ( this.string( val ) || this.context( val ) );
+  },
+  
+  
+  queryable: function( val ) {
+    return this.defined( val ) && ( this.context( val ) || this.query( val.$$ ) );
   }
   
 }

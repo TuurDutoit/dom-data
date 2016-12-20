@@ -314,7 +314,7 @@ var is = require("./is");
 
 
 
-var DomData = module.exports = function DomData( $root, template ) {
+var DomData = module.exports = function DomData( $root, template, hasToQuery ) {
   
   // 1. Create a context (constructor)
   if ( this instanceof DomData ) {
@@ -331,13 +331,15 @@ var DomData = module.exports = function DomData( $root, template ) {
   
   // 2. Parse template (simple function)
   
+  hasToQuery = hasToQuery !== false;
+  
   if ( is.undef( $root ) ) {
     return util.noRoot( template );
   }
   
   // 2.a Template is just a context
   if ( is.context( template ) ) {
-    return processContext( $root, template );
+    return processContext( $root, template, hasToQuery );
   }
   
   // 2.b template is an array
@@ -346,12 +348,12 @@ var DomData = module.exports = function DomData( $root, template ) {
   }
   
   // 2.c Template is an object
-  return processObject( $root, template );
+  return processObject( $root, template, hasToQuery );
 }
 
 
-function processContext( $root, template ) {
-  if ( template._query ) {
+function processContext( $root, template, hasToQuery ) {
+  if ( hasToQuery && template._query ) {
     $root = $root.querySelector( template._query );
     
     if ( is.undef( $root ) ) {
@@ -368,17 +370,31 @@ function processArray( $root, template ) {
   var res = [];
   
   template.forEach( function( child ) {
-    res.push( DomData( $root, child ) );
+    
+    if ( is.queryable( child ) ) {
+      var $elems = $root.querySelectorAll( child._query || child.$$._query || child.$$ );
+      
+      for ( var i = 0, len = $elems.length; i < len; i++ ) {
+        res.push( DomData( $elems[ i ], child, false ) );
+      }
+      
+    }
+    else {
+      
+      res.push( DomData( $root, child ) );
+      
+    }
+    
   } );
   
   return res;
 }
 
 
-function processObject( $root, template ) {
+function processObject( $root, template, hasToQuery ) {
   var res = {};
   
-  if ( is.query( template.$$ ) ) {
+  if ( hasToQuery && is.query( template.$$ ) ) {
     $root = $root.querySelector( template.$$._query || template.$$ );
     
     if ( is.undef( $root ) ) {
@@ -598,6 +614,11 @@ module.exports = {
   
   query: function( val ) {
     return this.defined( val ) && ( this.string( val ) || this.context( val ) );
+  },
+  
+  
+  queryable: function( val ) {
+    return this.defined( val ) && ( this.context( val ) || this.query( val.$$ ) );
   }
   
 }
