@@ -420,6 +420,7 @@ function processObject( $root, template, hasToQuery ) {
 }
 
 
+DomData.VERSION = "0.1.1";
 DomData._plugins = [];
 DomData._getters = {};
 DomData._filters = {};
