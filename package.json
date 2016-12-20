@@ -1,6 +1,6 @@
 {
   "name": "dom-data",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Extract data from the DOM",
   "main": "bundle.js",
   "jsnext:main": "src/index.js",

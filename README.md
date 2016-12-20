@@ -1,6 +1,6 @@
 dom-data
 =========
-`v0.0.1`
+`v0.1.0`
 
 Extract data from the DOM, ready to be used in your JavaScript.  
 Designed to tackle the SEO problem faced by SPA's: search engines only see an empty page if you get your data from XHR or WebSockets. With this module, you can send your data to the client in the HTML document - probably hidden from view, but still visible to search engines. Just place the `bundle.js` file in a script tag, extract the data as shown below, and present it in a nicer way to your users.
