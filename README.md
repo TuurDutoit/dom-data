@@ -48,32 +48,29 @@ To explain the rules, an example is probably the most effective, so here you go:
 
 ```javascript
 var template = [
-  // Will be repeated for every article
   {
-    // $$: select an element, in this case <article>s
+    // $$: select an element
     $$: "article",
-    // __: process element manually - get id from <article>
-    id: {__: function($article) {
-      return $article.getAttribute("id");
-    }},
-    title: ".title",
-    // $_: filter outputted text - cap intro at 20 chars
-    intro: {$$: ".intro", $_: function(intro) { 
-      return intro.slice(0, 20);
-    }},
-    content: {$$: ".content", __: function($content) {
-      return $content.innerHTML;
-    }},
-    author: ".author",
-    posted: ".posted",
-    numberOfReads: ".number-of-reads",
+    // attribute(): select an attribute of the root element
+    id: DomData.attribute("id"),
+    //text(): optional, it's the default getter
+    title: DomData.query(".title").text().prepend("OFFICIAL: "),
+    // filter(): add a (custom) filter; inline, in this case. Pass a string to add a registered filter.
+    intro: DomData.query(".intro").filter(function(intro){ return intro.slice(0, 20); }),
+    // Extract the inner HTML
+    content: DomData.query(".content").html(),
+    // Convert to a Date object
+    posted: DomData.query(".posted").date(),
+    // Convert to a number
+    numberOfReads: DomData.query(".number-of-reads").number(),
+    // Nested objects are allowed and will be automatically traversed
+    author: {
+      name: DomData.query(".name"),
+      age: DomData.query(".age").number()
+    },
+    // Array: for every context, execute it for every element matched by its query
     related: [
-      {
-        $$: ".related a",
-        __: function($link) {
-          return $link.getAttribute("href").slice(1);
-        }
-      }
+      DomData.query(".related li a").attr("href").slice(1)
     ]
   }
 ];
