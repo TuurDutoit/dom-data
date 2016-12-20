@@ -1,14 +1,23 @@
-var merge = require("lodash.merge");
 var filters = require("./filters");
 var getters = require("./getters");
+var context = require("./context");
+var util = require("./util");
 var is = require("./is");
+
+
+
+
+//
+// Constructor
+//
+
+
 
 
 var DomData = module.exports = function DomData( $root, template ) {
   
+  // 1. Create a context (constructor)
   if ( this instanceof DomData ) {
-    // Create a context
-    console.log("constructor");
     
     this[ is.Context ] = true;
     this._getter = getters.text;
@@ -18,21 +27,95 @@ var DomData = module.exports = function DomData( $root, template ) {
     return this;
   }
   
-  // Parse template
-  console.log("function");
+  // OR:
   
-  if ( is.context( template ) ) {
-    return template.exec( $root );
+  // 2. Parse template (simple function)
+  
+  if ( is.undef( $root ) ) {
+    return util.noRoot( template );
   }
   
+  // 2.a Template is just a context
+  if ( is.context( template ) ) {
+    return processContext( $root, template );
+  }
   
+  // 2.b template is an array
+  if ( is.array( template ) ) {
+    return processArray( $root, template );
+  }
   
+  // 2.c Template is an object
+  return processObject( $root, template );
+}
+
+
+function processContext( $root, template ) {
+  if ( template._query ) {
+    $root = $root.querySelector( template._query );
+    
+    if ( is.undef( $root ) ) {
+      return util.noRoot( template );
+    }
+    
+  }
+  
+  return template.exec( $root );
+}
+
+
+function processArray( $root, template ) {
+  var res = [];
+  
+  template.forEach( function( child ) {
+    res.push( DomData( $root, child ) );
+  } );
+  
+  return res;
+}
+
+
+function processObject( $root, template ) {
+  var res = {};
+  
+  if ( is.query( template.$$ ) ) {
+    $root = $root.querySelector( template.$$._query || template.$$ );
+    
+    if ( is.undef( $root ) ) {
+      return util.noRoot( template );
+    }
+    
+  }
+  
+  for ( var key in template ) {
+    var val = template[ key ];
+    
+    if ( is.object( val ) ) {
+      // context, object or array
+      res[ key ] = DomData( $root, val );
+    }
+    else if ( key !== "$$" ) {
+      // simple value
+      res[ key ] = val;
+    }
+  }
+  
+  return res;
 }
 
 
 DomData._plugins = [];
 DomData._getters = {};
 DomData._filters = {};
+
+
+
+
+//
+// Methods
+//
+
+
 
 
 DomData.extend = function( opts ) {
@@ -44,7 +127,7 @@ DomData.extend = function( opts ) {
     return self.call( this, $root, template );
   }
 
-  merge( DD, this );
+  util.merge( DD, this );
   
   DD.prototype = Object.create( this.prototype, {
     "constructor": {
@@ -61,11 +144,11 @@ DomData.extend = function( opts ) {
   }
   
   if ( opts.getters ) {
-    merge( DD._getters, opts.getters );
+    util.merge( DD._getters, opts.getters );
   }
   
   if ( opts.filters ) {
-    merge( DD._filters, opts.filters );
+    util.merge( DD._filters, opts.filters );
   }
   
   // Run plugins
@@ -77,13 +160,13 @@ DomData.extend = function( opts ) {
 }
 
 
-DomData.register = function( type, name, item ) {
+DomData.register = function( name, item, isGetter ) {
   
-  if ( is.func( type ) ) {
+  if ( is.func( name ) ) {
     // This is a plugin
-    this.registerPlugin( type, name );
+    this.registerPlugin( name, item );
   }
-  else if ( type === "getter" ) {
+  else if ( isGetter ) {
     this.registerGetter( name, item );
   }
   else {
@@ -112,11 +195,11 @@ DomData.registerGetter = function( name, getter ) {
   
   this[ name ] = function(  ) {
     var ctx = new self();
-    return ctx[ name ].apply( ctx, arguments );
+    return ctx.setGetter( getter, arguments );
   }
   
   this.prototype[ name ] = function(  ) {
-    this.setGetter( getter, arguments );
+    return this.setGetter( getter, arguments );
   }
   
   return this;
@@ -129,118 +212,42 @@ DomData.registerFilter = function( name, filter ) {
   
   this[ name ] = function(  ) {
     var ctx = new self();
-    return ctx[ name ].apply( ctx, arguments );
+    return ctx.setGetter( getter, arguments );
   }
   
   this.prototype[ name ] = function(  ) {
-    this.addFilter( filter, arguments );
+    return this.addFilter( filter, arguments );
   }
   
   return this;
 }
 
 
-DomData.prototype.exec = function( $root ) {
+DomData.query = function( query ) {
   
-  this.$root = $root;
-  var val = this._getter( $root );
+  var ctx = new this();
+  return ctx.query( query );
   
-  if ( is.defined( val ) ) {
-    this.value = val;
-  }
-  
-  for ( var i = 0, len = this._filters.length; i < len; i++ ) {
-    
-    var input = this.value;
-    var filter = this._filters[ i ];
-    var output = filter.call( this, input );
-    
-    if ( is.defined( output ) ) {
-      this.value = output;
-    }
-    else if ( is.undef( this.value ) ) {
-      var name = is.string( filter.name ) ? " (" + filter.name + ")" : "";
-      
-      console.warn( "A filter didn't return a value! Returning null for this field." );
-      console.warn( "Input:", input );
-      console.warn( "Filter" + name + ":", filter );
-      
-      return null;
-    }
-    
-  }
-  
-  return this.value;
-}
-
-
-// QUERY
-
-
-DomData.prototype.query = function( q ) {
-  
-  this._query = q;
-  
-  return this;
-}
-
-
-// GETTER
-
-
-DomData.prototype.setGetter = function( getter, args ) {
-  var old = getter; // Save a ref to this value in case we need to report an error.
-  
-  if ( is.string( getter ) ) {
-    getter = this.constructor._getters[ getter ];
-  }
-  
-  if ( !is.func( getter ) ) {
-    console.warn( "Getter is not a function or was not found! Ignoring.", old );
-    return this;
-  }
-  
-  this._getter = bind( getter, args );
-  
-  return this;
-}
-
-
-DomData.prototype.getter = function( getter ) {
-  return this.setGetter( getter, [].slice.call( arguments, 1 ) );
-}
-
-
-// FILTERS
-
-
-DomData.prototype.addFilter = function( filter, args ) {
-  var old = filter; // Save a ref to this value in case we need to report an error.
-  
-  if ( is.string( filter ) ) {
-    filter = this.constructor._filters[ filter ];
-  }
-  
-  if ( !is.func( filter ) ) {
-    console.warn( "Filter is not a function! Ingoring.", old );
-    return this;
-  }
-  
-  this._filters.push( bind( filter, args ) );
-  
-  return this;
-}
-
-
-DomData.prototype.filter = function( filter ) {
-  return this.addFilter( filter, [].slice.call( arguments, 1 ) );
 }
 
 
 
 
-function bind( func, args ) {
-  return function(  ) {
-    return func.apply( this, [].concat( arguments ).concat( args ) );
-  }
+//
+// Context
+// Getters and Filters (defaults)
+//
+
+
+util.merge(DomData.prototype, context);
+
+for ( var name in getters ) {
+  DomData.registerGetter( name, getters[ name ] );
 }
+
+for ( var name in filters ) {
+  DomData.registerFilter( name, filters[ name ] );
+}
+
+
+

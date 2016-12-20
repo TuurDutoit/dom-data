@@ -1,7 +1,7 @@
 module.exports = {
   
   number: function( str ) {
-    return new Number( str );
+    return Number( str );
   },
   
 
@@ -19,7 +19,7 @@ module.exports = {
     try {
       return JSON.parse( str );
     } catch ( e ) {
-      console.warn( "Error parsing data to object: '" + str + "'" );
+      console.warn( "Error parsing data to object: '" + str + "'", e );
       return null;
     }
 
@@ -35,10 +35,22 @@ module.exports = {
     try {
       return JSON.parse( str );
     } catch ( e ) {
-      console.warn( "Error parsing data to array: '" + str + "'" );
+      console.warn( "Error parsing data to array: '" + str + "'", e );
       return null;
     }
 
+  },
+  
+  
+  json: function( str ) {
+    
+    try {
+      return JSON.parse( str );
+    } catch( e ) {
+      console.warn( "Error parsing data to JSON: '" + str + "'", e );
+      return null;
+    }
+    
   },
 
 

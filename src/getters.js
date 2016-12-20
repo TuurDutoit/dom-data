@@ -15,13 +15,23 @@ module.exports = {
   },
 
 
-  attr: function( $root, attr ) {
-    return $root.getAttribute( attr );
-  },
+  attribute: attribute,
+  attr: attribute,
 
-
-  prop: function( $root, prop ) {
-    return $root[ prop ];
-  }
+  
+  property: property,
+  prop: property
   
 };
+
+
+
+
+function attribute( $root, attr ) {
+  return $root.getAttribute( attr );
+}
+
+
+function property( $root, prop ) {
+  return $root[ prop ];
+}

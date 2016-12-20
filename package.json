@@ -29,7 +29,5 @@
     "url": "https://github.com/TuurDutoit/dom-data/issues"
   },
   "homepage": "https://github.com/TuurDutoit/dom-data#readme",
-  "dependencies": {
-    "lodash.merge": "^4.6.0"
-  }
+  "dependencies": {}
 }

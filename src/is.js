@@ -3,6 +3,9 @@ var isContext = "__DomDataContext__";
 
 module.exports = {
   
+  Context: isContext,
+  
+  
   undef: function( val ) {
     return val == null;
   },
@@ -21,6 +24,11 @@ module.exports = {
   func: function( val ) {
     return typeof( val ) === "function";
   },
+  
+  
+  object: function( val ) {
+    return typeof( val ) === "object";
+  },
 
 
   array: function( val ) {
@@ -33,6 +41,8 @@ module.exports = {
   },
   
   
-  Context: isContext
+  query: function( val ) {
+    return this.defined( val ) && ( this.string( val ) || this.context( val ) );
+  }
   
 }
