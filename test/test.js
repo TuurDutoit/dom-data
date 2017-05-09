@@ -7,7 +7,9 @@ var template = [
     content: DomData.query(".content").html(),  // Get the inner HTML (getter)
     posted: DomData.query(".posted").date(),  // Convert to a Date object (filter)
     numberOfReads: DomData.query(".number-of-reads").number(),  // Convert to a number (filter)
+    subheader: DomData.query(".number-of-reads").number().add(1000).append(" people have read this article"),
     author: DomData.query(".author").text().object(),  // Parse as JSON. text() getter is is the default, and thus optional
+    active: DomData.hasAttribute("active"),
     related: [
       DomData.query(".related li a").attr("href").slice(1),
       //DomData.parse("{.related li a}:attr(href) | slice(1)"),  // or use strings

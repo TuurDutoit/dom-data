@@ -108,6 +108,11 @@ module.exports = {
 },{"./is":5,"./util":6}],2:[function(require,module,exports){
 module.exports = {
   
+  exists: function( val ) {
+    return val != null;
+  },
+  
+  
   number: function( str ) {
     return Number( str );
   },
@@ -279,10 +284,18 @@ module.exports = {
 
   attribute: attribute,
   attr: attribute,
+  
+  
+  hasAttribute: hasAttribute,
+  hasAttr: hasAttribute,
 
   
   property: property,
-  prop: property
+  prop: property,
+  
+  
+  hasProperty: hasProperty,
+  hasProp: hasProperty
   
 };
 
@@ -294,8 +307,18 @@ function attribute( $root, attr ) {
 }
 
 
+function hasAttribute( $root, attr ) {
+  return $root.hasAttribute( attr );
+}
+
+
 function property( $root, prop ) {
   return $root[ prop ];
+}
+
+
+function hasProperty( $root, prop ) {
+  return $root[ prop ] != null;
 }
 },{}],4:[function(require,module,exports){
 var filters = require("./filters");

@@ -1,6 +1,6 @@
 dom-data
 =========
-`v0.1.1`
+`v0.2.0`
 
 Extract data from the DOM, ready to be used in your JavaScript.  
 Designed to tackle the SEO problem faced by SPA's: search engines only see an empty page if you get your data from XHR or WebSockets. With this module, you can send your data to the client in the HTML document - probably hidden from view, but still visible to search engines. Just place the `bundle.js` file in a script tag, extract the data as shown below, and present it in a nicer way to your users.
@@ -53,7 +53,7 @@ var template = [
     $$: "article",
     // attribute(): select an attribute of the root element
     id: DomData.attribute("id"),
-    //text(): optional, it's the default getter
+    // text(): optional, it's the default getter
     title: DomData.query(".title").text().prepend("OFFICIAL: "),
     // filter(): add a (custom) filter; inline, in this case. Pass a string to add a registered filter.
     intro: DomData.query(".intro").filter(function(intro){ return intro.slice(0, 20); }),
@@ -63,12 +63,19 @@ var template = [
     posted: DomData.query(".posted").date(),
     // Convert to a number
     numberOfReads: DomData.query(".number-of-reads").number(),
-    // Nested objects are allowed and will be automatically traversed
+    // Filters can be chained
+    subheader: DomData.query(".number-of-reads").number().add(1000).append(" people have read this article"),
+    // Check if an attribute exists (works for properties too)
+    active: DomData.attr("active").exists(),
+    // Alternatively:
+    active: DomData.hasAttribute("active"),
+    // Nested objects are allowed and will be automatically traversed,
+    // mirroring their structure in the result
     author: {
       name: DomData.query(".name"),
       age: DomData.query(".age").number()
     },
-    // Array: for every context, execute it for every element matched by its query
+    // Array: Adds an entry for every element that matches the query
     related: [
       DomData.query(".related li a").attr("href").slice(1)
     ]
@@ -88,12 +95,13 @@ var data = DomData(canvas, template);
     title: "This is the title of the first article",
     intro: "This is the intro to",
     content: "<p>This is the first line of the article</p>\n<p>Here is another line</p>\n<p>And this is the last line</p>",
+    posted: Date("Wed Jul 27 2016 14:19:06 GMT+0200 (DEST)"),
+    numberOfReads: 243,
+    subheader: "1243 people have read this article",
     author: {
       first: "Tuur",
       last: "Dutoit"
     },
-    posted: Date("Wed Jul 27 2016 14:19:06 GMT+0200 (DEST)"),
-    numberOfReads: 243,
     related: ["785645677", "235645675"]
   },
   {"...": "..."}

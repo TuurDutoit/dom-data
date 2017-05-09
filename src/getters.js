@@ -40,7 +40,7 @@ function attribute( $root, attr ) {
 }
 
 
-function hasAttribute( $root, atr ) {
+function hasAttribute( $root, attr ) {
   return $root.hasAttribute( attr );
 }
 
