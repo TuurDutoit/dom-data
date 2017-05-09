@@ -17,10 +17,18 @@ module.exports = {
 
   attribute: attribute,
   attr: attribute,
+  
+  
+  hasAttribute: hasAttribute,
+  hasAttr: hasAttribute,
 
   
   property: property,
-  prop: property
+  prop: property,
+  
+  
+  hasProperty: hasProperty,
+  hasProp: hasProperty
   
 };
 
@@ -32,6 +40,16 @@ function attribute( $root, attr ) {
 }
 
 
+function hasAttribute( $root, atr ) {
+  return $root.hasAttribute( attr );
+}
+
+
 function property( $root, prop ) {
   return $root[ prop ];
+}
+
+
+function hasProperty( $root, prop ) {
+  return $root[ prop ] != null;
 }

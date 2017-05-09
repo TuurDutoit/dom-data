@@ -1,5 +1,10 @@
 module.exports = {
   
+  exists: function( val ) {
+    return val != null;
+  },
+  
+  
   number: function( str ) {
     return Number( str );
   },
